@@ -14,6 +14,7 @@ struct ParseResult {
   optional<float> humidity;
   optional<float> battery_level;
   optional<float> battery_voltage;
+  optional<int>   binary;
   int raw_offset;
 };
 
@@ -29,6 +30,7 @@ class PVVXMiThermometer : public Component, public esp32_ble_tracker::ESPBTDevic
   void set_battery_level(sensor::Sensor *battery_level) { battery_level_ = battery_level; }
   void set_battery_voltage(sensor::Sensor *battery_voltage) { battery_voltage_ = battery_voltage; }
   void set_signal_strength(sensor::Sensor *signal_strength) { signal_strength_ = signal_strength; }
+  void set_binary(sensor::Sensor *binary) { binary_ = binary; }
 
  protected:
   uint64_t address_;
@@ -37,6 +39,7 @@ class PVVXMiThermometer : public Component, public esp32_ble_tracker::ESPBTDevic
   sensor::Sensor *battery_level_{nullptr};
   sensor::Sensor *battery_voltage_{nullptr};
   sensor::Sensor *signal_strength_{nullptr};
+  sensor::Sensor *binary_{nullptr};
 
   optional<ParseResult> parse_header_(const esp32_ble_tracker::ServiceData &service_data);
   bool parse_message_(const std::vector<uint8_t> &message, ParseResult &result);

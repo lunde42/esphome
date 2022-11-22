@@ -14,6 +14,7 @@ void PVVXMiThermometer::dump_config() {
   LOG_SENSOR("  ", "Humidity", this->humidity_);
   LOG_SENSOR("  ", "Battery Level", this->battery_level_);
   LOG_SENSOR("  ", "Battery Voltage", this->battery_voltage_);
+  LOG_SENSOR("  ", "Binary", this->binary_);
 }
 
 bool PVVXMiThermometer::parse_device(const esp32_ble_tracker::ESPBTDevice &device) {
@@ -45,6 +46,8 @@ bool PVVXMiThermometer::parse_device(const esp32_ble_tracker::ESPBTDevice &devic
       this->battery_voltage_->publish_state(*res->battery_voltage);
     if (this->signal_strength_ != nullptr)
       this->signal_strength_->publish_state(device.get_rssi());
+    if (this->binary_ != nullptr)
+      this->binary_->publish_state(*res->binary);
     success = true;
   }
 
@@ -108,6 +111,8 @@ bool PVVXMiThermometer::parse_message_(const std::vector<uint8_t> &message, Pars
   // uint8_t     battery_level;  // 0..100 %          [12]
   result.battery_level = uint8_t(data[12]);
 
+  result.binary = (data[14] & 0x80) ? 1 : 0;
+
   return true;
 }
 
@@ -130,6 +135,9 @@ bool PVVXMiThermometer::report_results_(const optional<ParseResult> &result, con
   }
   if (result->battery_voltage.has_value()) {
     ESP_LOGD(TAG, "  Battery Voltage: %.3f V", *result->battery_voltage);
+  }
+  if (result->binary.has_value()) {
+    ESP_LOGD(TAG, "  Binary: %d", *result->binary);
   }
 
   return true;

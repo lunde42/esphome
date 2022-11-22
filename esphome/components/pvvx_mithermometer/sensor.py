@@ -9,17 +9,20 @@ from esphome.const import (
     CONF_SIGNAL_STRENGTH,
     CONF_TEMPERATURE,
     CONF_ID,
+    CONF_BINARY,
     DEVICE_CLASS_BATTERY,
     DEVICE_CLASS_HUMIDITY,
     DEVICE_CLASS_SIGNAL_STRENGTH,
     DEVICE_CLASS_TEMPERATURE,
     DEVICE_CLASS_VOLTAGE,
+    DEVICE_CLASS_EMPTY,
     ENTITY_CATEGORY_DIAGNOSTIC,
     STATE_CLASS_MEASUREMENT,
     UNIT_CELSIUS,
     UNIT_DECIBEL_MILLIWATT,
     UNIT_PERCENT,
     UNIT_VOLT,
+    UNIT_EMPTY,
 )
 
 CODEOWNERS = ["@pasiz"]
@@ -69,6 +72,12 @@ CONFIG_SCHEMA = (
                 state_class=STATE_CLASS_MEASUREMENT,
                 entity_category=ENTITY_CATEGORY_DIAGNOSTIC,
             ),
+            cv.Optional(CONF_BINARY): sensor.sensor_schema(
+                unit_of_measurement=UNIT_EMPTY,
+                accuracy_decimals=0,
+                device_class=DEVICE_CLASS_EMPTY,
+                state_class=STATE_CLASS_MEASUREMENT,
+            ),
         }
     )
     .extend(esp32_ble_tracker.ESP_BLE_DEVICE_SCHEMA)
@@ -98,3 +107,6 @@ async def to_code(config):
     if CONF_SIGNAL_STRENGTH in config:
         sens = await sensor.new_sensor(config[CONF_SIGNAL_STRENGTH])
         cg.add(var.set_signal_strength(sens))
+    if CONF_BINARY in config:
+        sens = await sensor.new_sensor(config[CONF_BINARY])
+        cg.add(var.set_binary(sens))
