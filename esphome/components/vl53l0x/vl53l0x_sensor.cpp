@@ -33,6 +33,8 @@ void VL53L0XSensor::dump_config() {
 void VL53L0XSensor::setup() {
   ESP_LOGD(TAG, "'%s' - setup BEGIN", this->name_.c_str());
 
+  this->timeouts = 0;
+
   if (!esphome::vl53l0x::VL53L0XSensor::enable_pin_setup_complete) {
     for (auto &vl53_sensor : vl53_sensors) {
       if (vl53_sensor->enable_pin_ != nullptr) {
@@ -264,6 +266,16 @@ void VL53L0XSensor::update() {
     this->status_momentary_warning("update", 5000);
     ESP_LOGW(TAG, "%s - update called before prior reading complete - initiated:%d waiting_for_interrupt:%d",
              this->name_.c_str(), this->initiated_read_, this->waiting_for_interrupt_);
+    this->timeouts_++;
+
+    if (this->timeouts_ >= 3) {
+      this->timeouts_ = 0;
+      if (this->enable_pin_ != nullptr) {
+        ESP_LOGW(TAG, "%s - Sensor timed out multiple times, resetting it", this->name.c_str());
+        esphome::vl53l0x::VL53L0XSensor::enable_pin_setup_complete = false;
+        this->setup();
+      }
+    }
   }
 
   // initiate single shot measurement
